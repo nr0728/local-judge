@@ -184,7 +184,7 @@ SIZE_T GetProcessMemoryUsage(HANDLE hProcess) {
 // VERDICT includes: AC, WA, TLE, MLE, OLE, UKE (Unknown Error)
 string problem_id,submission_id,input_file_name,output_file_name,time_limit,memory_limit,checker_file;
 
-// 新的核心评测函数，用于替换原先 judge 函数内的过程
+// judgeProgram function by Federico, All rights reserved.
 JudgeInfo judgeProgram(const string &filename,
                        const string &input,
                        const string &output,
