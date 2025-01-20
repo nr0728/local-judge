@@ -163,8 +163,14 @@ private:
     DWORD timeout;
     SIZE_T memoryLimit;
     const DWORD pollInterval = 5;
+    std::string submissionId;
+    std::ofstream extlog;
 public:
-    WindowsJudge(DWORD timeout, SIZE_T memoryLimit) : timeout(timeout), memoryLimit(memoryLimit) {}
+    WindowsJudge(DWORD timeout, SIZE_T memoryLimit, std::map<std::string, std::string>& args) :
+        timeout(timeout),
+        memoryLimit(memoryLimit),
+        submissionId(args["--submission-id"]),
+        extlog("log\\extra-" + submissionId + ".log") {};
     JudgeInfo judge(const std::string& filename, const std::string& input, const std::string& output, const std::string& answer, const std::string& spj, int testid) override {
         JudgeInfo result;
         SECURITY_ATTRIBUTES sa, sb, sc;
@@ -223,7 +229,7 @@ public:
             CloseHandle(hOutput);
             Sleep(100);
             if (result.result == JudgeResult::SYSTEM_ERROR) {
-                bool differ = (spj == "none") ? FileComparator::compareFiles(output, answer) : customJudge(input, output, answer, spj, testid);
+                bool differ = (spj == "none") ? FileComparator::compareFiles(output, answer) : customJudge(input, output, answer, testid);
                 result.result = differ ? JudgeResult::ACCEPTED : JudgeResult::WRONG_ANSWER;
             }
         } else {
@@ -237,7 +243,7 @@ private:
         GetProcessMemoryInfo(hProcess, reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc));
         return pmc.PrivateUsage;
     }
-    bool customJudge(const std::string& input, const std::string& output, const std::string& answer, const std::string& checker, int testid) {
+    bool customJudge(const std::string& input, const std::string& output, const std::string& answer, int testid) {
         std::string checkerOutput = "temp\\checker.exe";
         std::string command = checkerOutput + " " + input + " " + output + " " + answer + " > temp\\checker_output.txt 2>&1";
         if (system(command.c_str())) {
@@ -265,7 +271,6 @@ private:
     std::string memoryLimit;
     std::string checkerFile;
     std::string fileIO;
-    std::ofstream extlog;
     std::ofstream evaluatorLog;
     FileNameSorter fileNameSorter;
     JudgeInterface* judgeInstance;
@@ -279,12 +284,11 @@ public:
         memoryLimit(args["--memory-limit"]),
         checkerFile(args["--checker-file"]),
         fileIO(args["--file-io"]),
-        extlog("log\\extra-" + submissionId + ".log"),
         evaluatorLog("log\\evaluator-" + submissionId + ".log")
     {
         DWORD timeout = (DWORD)(std::stoll(timeLimit));
         SIZE_T memoryLimitBytes = (SIZE_T)(std::stoll(memoryLimit) * 1024);
-        judgeInstance = new WindowsJudge(timeout, memoryLimitBytes);
+        judgeInstance = new WindowsJudge(timeout, memoryLimitBytes, args);
     }
     ~JudgeManager() {
         delete judgeInstance;
@@ -300,7 +304,7 @@ public:
         system(copyCommand.c_str());
         std::string compileCommand = "g++ " + randomFile + " -o " + randomExe + " -O2 -std=c++17 -DONLINE_JUDGE 2> log\\compile-" + submissionId + ".log";
         if (system(compileCommand.c_str())) {
-            for (const auto& filePair : files) {
+            for (int _ = 0; _ < (int)files.size(); ++_) {
                 evaluatorLog << "TIME 0 MEMORY 0 VERDICT CE" << std::endl;
             }
             return;
@@ -310,7 +314,7 @@ public:
             std::string checkerOutput = "temp\\checker.exe";
             std::string command = "g++ -O2 -std=c++17 -o " + checkerOutput + " " + checkerFilename;
             if (system(command.c_str())) {
-                for (const auto& filePair : files) {
+                for (int _ = 0; _ < (int)files.size(); ++_) {
                     evaluatorLog << "TIME 0 MEMORY 0 VERDICT UKE" << std::endl;
                 }
                 return;
