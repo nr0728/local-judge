@@ -1,3 +1,5 @@
+# For Windows
+
 把 evaluator.cpp 放一个目录，这个目录下加 log problems submissions temp 文件夹
 
 submissions 里面存 编号.cpp
