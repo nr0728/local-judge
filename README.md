@@ -1,4 +1,4 @@
-# Local Judge For Windows
+# Local Judge for Windows
 
 把 evaluator.cpp 放一个目录，这个目录下加 log、problems、submissions、temp 文件夹。
 
