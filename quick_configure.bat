@@ -1,8 +1,8 @@
 @echo off
-REM 为了提升中国大陆地区用户的下载速度，我们将默认的下载源设置为清华大学的镜像站点
-REM 如果没有安装 scoop，将会自动安装 scoop
 
 echo [WARNING] If you're in China Mainland, we recommend you to edit hosts file to speed up the download.
+
+pause
 
 echo Checking if scoop is installed...
 if not exist "%USERPROFILE%\scoop" (
