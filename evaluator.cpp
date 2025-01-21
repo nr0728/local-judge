@@ -89,6 +89,10 @@ public:
         res += ".cpp";
         return res;
     }
+
+    static int getCurrentTimestamp() {
+        return std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    }
 };
 
 class FileNameSorter {
@@ -300,30 +304,42 @@ public:
         }
         std::string randomFile = Utils::generateRandomFilename();
         std::string randomExe = randomFile.substr(0, randomFile.size() - 4) + ".exe";
-        std::string copyCommand = "copy submissions\\" + submissionId + ".cpp " + randomFile;
+        std::string copyCommand = "copy submissions\\" + submissionId + ".cpp " + randomFile + ">nul 2>nul";
         system(copyCommand.c_str());
         std::string compileCommand = "g++ " + randomFile + " -o " + randomExe + " -O2 -std=c++17 -DONLINE_JUDGE 2> log\\compile-" + submissionId + ".log";
+        std::cerr << "Compiling Program..." << std::endl;
         if (system(compileCommand.c_str())) {
             for (int _ = 0; _ < (int)files.size(); ++_) {
                 evaluatorLog << "TIME 0 MEMORY 0 VERDICT CE" << std::endl;
             }
+            std::cerr << "Compilation Error:" << std::endl;
+            std::ifstream fin("log\\compile-" + submissionId + ".log");
+            std::string line;
+            while (getline(fin, line)) std::cerr << line << std::endl;
             return;
         }
+        std::cerr << "Compilation Successful." << std::endl;
         if (checkerFile != "none") {
             std::string checkerFilename = "problems\\data\\" + problemId + "\\" + checkerFile;
             std::string checkerOutput = "temp\\checker.exe";
             std::string command = "g++ -O2 -std=c++17 -o " + checkerOutput + " " + checkerFilename;
+            std::cerr << "Compiling Checker..." << std::endl;
             if (system(command.c_str())) {
                 for (int _ = 0; _ < (int)files.size(); ++_) {
                     evaluatorLog << "TIME 0 MEMORY 0 VERDICT UKE" << std::endl;
                 }
+                std::cerr << "Checker Compilation Error." << std::endl;
                 return;
             }
+            std::cerr << "Checker Compilation Successful." << std::endl;
         }
         int testId = 0;
         for (const auto& filePair : files) {
             std::string inputFile = "problems\\data\\" + problemId + "\\" + filePair.first;
             std::string outputFile = "problems\\data\\" + problemId + "\\" + filePair.second;
+            std::cerr << "Testcase (<font face=\"Consolas\">" << inputFile.substr(inputFile.find_last_of("\\") + 1)
+                   << "</font>, <font face=\"Consolas\">" << outputFile.substr(outputFile.find_last_of("\\") + 1)
+                << "</font>)" << ": \n\t" << std::flush;
             judgeTestcase(inputFile, outputFile, randomExe, ++testId);
         }
     }
@@ -347,9 +363,43 @@ private:
         }
         return files;
     }
+    std::map<std::string, std::string> verdictColor = {
+        {"AC", "#52C41A"},
+        {"WA", "#E74C3C"},
+        {"TLE", "#052242"},
+        {"MLE", "#052242"},
+        {"OLE", "#052242"},
+        {"CE", "#FADB14"},
+        {"UKE", "#0E1D69"}
+    };
+    std::string convertColor(double p) {
+        if (p < 0.0) p = 0.0;
+        if (p > 1.0) p = 1.0;
+        int red = static_cast<int>(std::round(p * 255));
+        int green = static_cast<int>(std::round((1.0 - p) * 255));
+        int blue = 0;
+        std::stringstream ss;
+        ss << "#"
+            << std::uppercase << std::hex << std::setw(2) << std::setfill('0') << red
+            << std::setw(2) << std::setfill('0') << green
+            << std::setw(2) << std::setfill('0') << blue;
+        return ss.str();
+    }
+    std::string cerrWithColor(const std::string message, const std::string color) {
+        return "<b> <font color=\"" + color + "\">" + message + "</font> </b>";
+    }
+    std::string convertToMB(const auto& memory) {
+        double mem = memory;
+        mem /= 1048576.0;
+        return std::__cxx11::to_string(mem);
+    }
     void judgeTestcase(const std::string& inputFile, const std::string& outputFile, const std::string& executable, int testId) {
+        std::string userInputFile = (fileIO == "1") ? inputFileName : "temp\\input.txt";
         std::string userOutputFile = (fileIO == "1") ? outputFileName : "temp\\output.txt";
-        JudgeInfo info = judgeInstance->judge(executable, inputFile, userOutputFile, outputFile, checkerFile, testId);
+        if (fileIO == "1") {
+            system(("copy " + inputFile + " " + userInputFile + " >nul 2>nul").c_str());
+        }
+        JudgeInfo info = judgeInstance->judge(executable, userInputFile, userOutputFile, outputFile, checkerFile, testId);
         if (info.result == JudgeResult::ACCEPTED || info.result == JudgeResult::WRONG_ANSWER) {
             std::ifstream outCheck(userOutputFile, std::ios::binary | std::ios::ate);
             if (outCheck.is_open()) {
@@ -357,6 +407,8 @@ private:
                 if (size > 100LL * 1024 * 1024) info.result = JudgeResult::OUTPUT_LIMIT_EXCEEDED;
             }
         }
+        system(("del " + userInputFile + " >nul 2>nul").c_str());
+        system(("del " + userOutputFile + " >nul 2>nul").c_str());
         std::string verdict = "UKE";
         switch (info.result) {
             case JudgeResult::ACCEPTED: verdict = "AC"; break;
@@ -368,6 +420,14 @@ private:
             default: verdict = "UKE"; break;
         }
         evaluatorLog << "TIME " << info.time << " MEMORY " << (info.memory / 1024) << " VERDICT " << verdict << std::endl;
+        std::string cerrMessage = "";
+        cerrMessage += cerrWithColor(verdict, verdictColor[verdict]);
+        cerrMessage += " (Time: ";
+        cerrMessage += cerrWithColor(std::__cxx11::to_string(info.time), convertColor(info.time * 1.0 / std::stoll(timeLimit)));
+        cerrMessage += " ms, Memory: ";
+        cerrMessage += cerrWithColor(convertToMB(info.memory), convertColor(info.memory / 1024.0 / std::stoll(memoryLimit)));
+        cerrMessage += " MB)";
+        std::cerr << cerrMessage << std::endl;
         std::string executableName = executable.substr(executable.find_last_of("\\") + 1);
         system(("taskkill /f /im " + executableName + " >nul 2>nul").c_str());
         system("del temp\\output.txt >nul 2>nul");
@@ -386,5 +446,6 @@ int main(int argc, char* argv[]) {
     }
     JudgeManager judgeManager(args);
     judgeManager.run();
+    std::cerr << "Timestamp: " << Utils::getCurrentTimestamp() << std::endl;
     return 0;
 }
