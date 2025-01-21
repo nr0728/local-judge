@@ -4,7 +4,7 @@
 
 ## 安装
 
-1. [下载本项目的 Source Code]()。
+1. [下载本项目的 Source Code](https://github.com/nr0728/local-judge/archive/refs/heads/main.zip)。
 2. 解压后运行 `quick_configure.bat`。
    - 如果由于网络环境等因素无法运行，请确保你的 PATH 中有 `g++`, `node`；
    - 然后编译 `evaluator.cpp` 到 `evaluator.exe`；
