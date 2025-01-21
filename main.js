@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
     <html lang="zh-CN">
     <head>
         <meta charset="UTF-8">
-        <title>代码提交与评测系统</title>
+        <title>Local Judge</title>
         <!-- Semantic UI CSS 通过 CDN -->
         <link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/semantic-ui/dist/semantic.min.css">
         <!-- jQuery 通过 CDN -->
@@ -67,6 +67,10 @@ app.get('/', (req, res) => {
         </style>
     </head>
     <body>
+        <div class="ui container">
+            <h1 class="ui header">Local Judge</h1>
+            <p>欢迎使用 Local Judge！项目地址：<a href="https://github.com/nr0728/local-judge">GitHub</a>。</p>
+        </div>
         <div class="ui container">
             <div class="ui two column stackable grid">
                 <!-- 左侧：提交代码 -->
