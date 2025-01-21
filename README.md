@@ -1,6 +1,6 @@
 # Local Judge for Windows
 
-简体中文 | [English]()
+简体中文 | [English](https://github.com/nr0728/local-judge/blob/main/README-en.md)
 
 ## 安装
 
