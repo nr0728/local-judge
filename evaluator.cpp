@@ -407,7 +407,7 @@ private:
                 if (size > 100LL * 1024 * 1024) info.result = JudgeResult::OUTPUT_LIMIT_EXCEEDED;
             }
         }
-        system(("del " + userInputFile + " >nul 2>nul").c_str());
+        if (fileIO == "1") system(("del " + userInputFile + " >nul 2>nul").c_str());
         system(("del " + userOutputFile + " >nul 2>nul").c_str());
         std::string verdict = "UKE";
         switch (info.result) {
