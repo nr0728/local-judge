@@ -394,7 +394,7 @@ private:
         return std::__cxx11::to_string(mem);
     }
     void judgeTestcase(const std::string& inputFile, const std::string& outputFile, const std::string& executable, int testId) {
-        std::string userInputFile = (fileIO == "1") ? inputFileName : "temp\\input.txt";
+        std::string userInputFile = (fileIO == "1") ? inputFileName : inputFile;
         std::string userOutputFile = (fileIO == "1") ? outputFileName : "temp\\output.txt";
         if (fileIO == "1") {
             system(("copy " + inputFile + " " + userInputFile + " >nul 2>nul").c_str());
