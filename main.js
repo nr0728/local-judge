@@ -30,11 +30,11 @@ app.get('/', (req, res) => {
         <meta charset="UTF-8">
         <title>Local Judge</title>
         <!-- Semantic UI CSS 通过 CDN -->
-        <link rel="stylesheet" href="https://gcore.jsdelivr.net/npm/semantic-ui/dist/semantic.min.css">
+        <link rel="stylesheet" href="/cdn/semantic.min.css">
         <!-- jQuery 通过 CDN -->
-        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="/cdn/jquery-3.1.1.min.js"></script>
         <!-- Semantic UI JS 通过 CDN -->
-        <script src="https://gcore.jsdelivr.net/npm/semantic-ui/dist/semantic.min.js"></script>
+        <script src="/cdn/semantic.min.js"></script>
         <!-- Socket.io 通过 CDN -->
         <script src="/socket.io/socket.io.js"></script>
         <style>
@@ -531,3 +531,4 @@ app.post('/saveRecord', upload.none(), (req, res) => {
 	});
 });
 
+app.use('/cdn', express.static(__dirname + '/cdn'));
