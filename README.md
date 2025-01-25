@@ -12,6 +12,10 @@
 3. 执行 `node main.js`，Local Judge 将会在 <http://localhost:3000> 可用。
    - 3000 端口被占用了怎么办？修改 `main.js`，把 `PORT` 改为一个可用端口，然后使用你更改后的端口访问即可。
 
+## 使用
+
+把题目数据存放到 `problems/data/${题目编号}` 目录即可，Local Judge 会自动识别测试点并排序。
+
 ## 功能
 
 1. 支持 C++ 传统题的评测，包括 SPJ。
